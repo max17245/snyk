@@ -1,0 +1,32 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+
+jobs:
+  snyk_scan:
+    docker:
+      - image: cimg/node:18.20
+    steps:
+      - checkout
+      - run:
+          name: Instala dependências (usando legacy-peer-deps)
+          command: npm install --legacy-peer-deps
+      - run:
+          name: Instala CLI do Snyk
+          command: npm install -g snyk
+      - run:
+          name: Autentica no Snyk (use variável de ambiente)
+          command: snyk auth $SNYK_TOKEN
+      - run:
+          name: Varredura de vulnerabilidades
+          command: snyk test
+      - run:
+          name: Varredura de código
+          command: snyk code test
+
+workflows:
+  version: 2
+  scan_on_push:
+    jobs:
+      - snyk_scan
